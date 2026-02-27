@@ -1,9 +1,5 @@
 flask
 flask-cors
 python-dotenv
-<<<<<<< HEAD
-google-genai
-=======
 google-genai
 gunicorn
->>>>>>> 8e13fa8009856cc3daee09ca83264c4a8e301d56
