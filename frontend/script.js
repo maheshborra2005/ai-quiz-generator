@@ -111,7 +111,9 @@ function updateStats(animateScore = false) {
     const completion = totalQuestions ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
     progressFill.style.width = `${completion}%`;
     progressLabel.innerText = `${completion}% completed`;
-    progressWrap.classList.toggle("is-hidden", totalQuestions === 0);
+    if (progressWrap) {
+        progressWrap.classList.toggle("is-hidden", totalQuestions === 0);
+    }
 
     const quizCompleted = totalQuestions > 0 && answeredQuestions === totalQuestions;
     scoreBoard.classList.toggle("is-hidden", !quizCompleted);
