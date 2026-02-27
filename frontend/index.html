@@ -1,19 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive MCQ Generator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<main class="app-shell">
+    <section class="container" aria-label="Quiz generator">
+        <header class="hero">
+            <p class="eyebrow">AI Quiz Studio</p>
+            <h1>Interactive MCQ Quiz Generator</h1>
+            <p class="subtitle">Generate practice quizzes instantly from any topic and test your understanding with live scoring.</p>
+        </header>
 
-<div class="container">
-    <h1>Interactive MCQ Quiz Generator</h1>
+        <section class="controls" aria-label="Quiz controls">
+            <label for="topicInput" class="sr-only">Quiz topic</label>
+            <div class="input-group">
+                <input type="text" id="topicInput" placeholder="Enter a topic (e.g., Java, DBMS, Python)">
+                <button class="generate-btn" onclick="generateMCQ()">Generate Quiz</button>
+            </div>
+        </section>
 
-    <input type="text" id="topicInput" placeholder="Enter topic (e.g., Java)">
-    <button class="generate-btn" onclick="generateMCQ()">Generate Quiz</button>
+        <section id="statsBar" class="stats" aria-live="polite">
+            <div id="scoreBoard" class="score-badge is-hidden">Score: 0 / 0</div>
+            <div id="progressWrap" class="progress-wrap is-hidden" aria-label="Quiz progress">
+                <div id="progressLabel" class="progress-label">0% completed</div>
+                <div class="progress-track">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+            </div>
+        </section>
 
-    <div id="quiz"></div>
-</div>
+        <section id="quiz" class="quiz-area" aria-live="polite"></section>
+    </section>
+</main>
 
 <script src="script.js"></script>
 </body>

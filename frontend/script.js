@@ -1,26 +1,47 @@
 let score = 0;
 let totalQuestions = 0;
+let answeredQuestions = 0;
 
 async function generateMCQ() {
-    const topic = document.getElementById("topicInput").value;
+    const topic = document.getElementById("topicInput").value.trim();
     const quizDiv = document.getElementById("quiz");
+
     score = 0;
+    totalQuestions = 0;
+    answeredQuestions = 0;
+    updateStats();
 
-    quizDiv.innerHTML = "Generating quiz...";
+    if (!topic) {
+        quizDiv.innerHTML = '<p class="error-message">Please enter a topic before generating a quiz.</p>';
+        return;
+    }
 
-    const response = await fetch("https://ai-quiz-generator-zufp.onrender.com/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: topic })
-    });
+    quizDiv.innerHTML = '<div class="loading-state"><span class="loading-dot" aria-hidden="true"></span>Generating quiz...</div>';
 
-    const data = await response.json();
+    try {
+        const response = await fetch("https://ai-quiz-generator-zufp.onrender.com/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic })
+        });
 
-    if (data.questions) {
-        totalQuestions = data.questions.length;
-        renderQuiz(data.questions);
-    } else {
-        quizDiv.innerHTML = "Error generating quiz.";
+        if (!response.ok) {
+            throw new Error("Request failed");
+        }
+
+        const data = await response.json();
+
+        if (data.questions && data.questions.length) {
+            totalQuestions = data.questions.length;
+            answeredQuestions = 0;
+            renderQuiz(data.questions);
+        } else {
+            quizDiv.innerHTML = '<p class="error-message">No quiz data received. Please try another topic.</p>';
+            updateStats();
+        }
+    } catch (error) {
+        quizDiv.innerHTML = '<p class="error-message">Error generating quiz. Please try again.</p>';
+        updateStats();
     }
 }
 
@@ -29,7 +50,7 @@ function renderQuiz(questions) {
     quizDiv.innerHTML = "";
 
     questions.forEach((q, index) => {
-        const questionDiv = document.createElement("div");
+        const questionDiv = document.createElement("article");
         questionDiv.className = "question";
 
         questionDiv.innerHTML = `<h3>${index + 1}. ${q.question}</h3>`;
@@ -37,6 +58,7 @@ function renderQuiz(questions) {
         q.options.forEach((option, i) => {
             const btn = document.createElement("button");
             btn.className = "option-btn";
+            btn.type = "button";
             btn.innerText = option;
 
             btn.onclick = function () {
@@ -51,7 +73,8 @@ function renderQuiz(questions) {
 
                 highlightCorrect(questionDiv, q.answer_index);
                 disableButtons(questionDiv);
-                updateScore();
+                answeredQuestions++;
+                updateStats(true);
             };
 
             questionDiv.appendChild(btn);
@@ -60,28 +83,44 @@ function renderQuiz(questions) {
         quizDiv.appendChild(questionDiv);
     });
 
-    updateScore();
+    updateStats();
 }
 
 function highlightCorrect(container, correctIndex) {
     const buttons = container.querySelectorAll(".option-btn");
-    buttons[correctIndex].classList.add("correct");
+    if (buttons[correctIndex]) {
+        buttons[correctIndex].classList.add("correct");
+    }
 }
 
 function disableButtons(container) {
     const buttons = container.querySelectorAll(".option-btn");
-    buttons.forEach(btn => btn.disabled = true);
+    buttons.forEach((btn) => {
+        btn.disabled = true;
+    });
 }
 
-function updateScore() {
-    let scoreBoard = document.getElementById("scoreBoard");
-
-    if (!scoreBoard) {
-        scoreBoard = document.createElement("div");
-        scoreBoard.id = "scoreBoard";
-        scoreBoard.className = "score-board";
-        document.getElementById("quiz").prepend(scoreBoard);
-    }
+function updateStats(animateScore = false) {
+    const scoreBoard = document.getElementById("scoreBoard");
+    const progressWrap = document.getElementById("progressWrap");
+    const progressFill = document.getElementById("progressFill");
+    const progressLabel = document.getElementById("progressLabel");
 
     scoreBoard.innerText = `Score: ${score} / ${totalQuestions}`;
+
+    const completion = totalQuestions ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+    progressFill.style.width = `${completion}%`;
+    progressLabel.innerText = `${completion}% completed`;
+    progressWrap.classList.toggle("is-hidden", totalQuestions === 0);
+
+    const quizCompleted = totalQuestions > 0 && answeredQuestions === totalQuestions;
+    scoreBoard.classList.toggle("is-hidden", !quizCompleted);
+
+    if (animateScore && quizCompleted) {
+        scoreBoard.classList.remove("score-pop");
+        void scoreBoard.offsetWidth;
+        scoreBoard.classList.add("score-pop");
+    }
 }
+
+updateStats();
