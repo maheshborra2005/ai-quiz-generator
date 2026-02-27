@@ -18,7 +18,7 @@ def generate_mcq():
         topic = data.get("topic", "")
 
         prompt = f"""
-        Generate 7 MCQ questions on the topic: {topic}.
+        Generate 10 MCQ questions on the topic: {topic}.
 
         Return ONLY valid JSON.
         Format:
